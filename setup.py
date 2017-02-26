@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='strict-hint',
-    packages=['strict_hint'],
+    packages=['strict-hint'],
     version='0.1.0',
     description='Strict type runtime checks for arguments and return types.',
     author='Michal Wachowski',
