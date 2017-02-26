@@ -1,10 +1,8 @@
 from distutils.core import setup
 
-from setuptools import find_packages
-
 setup(
     name='strict-hint',
-    packages=find_packages(exclude=['tests']),
+    packages=['strict_hint'],
     version='0.1.0',
     description='Strict type runtime checks for arguments and return types.',
     author='Michal Wachowski',
