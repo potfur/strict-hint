@@ -51,7 +51,3 @@ class StrictHint(object):
 
     def __matches_hint(self, value, expected, default=None):
         return isinstance(value, expected) or value == default
-
-
-def strict(wrapped):
-    return StrictHint()(wrapped)
