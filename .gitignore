@@ -1,0 +1,7 @@
+.cache/
+.tox/
+bin/
+include/
+lib/
+strict_hint.egg-info/
+pip-selfcheck.json
