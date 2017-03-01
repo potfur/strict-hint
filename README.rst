@@ -1,12 +1,14 @@
+===========
 Strict hint
 ===========
 
 **Strict hint** provides a way to do runtime type checks based based on type hint annotations introduced by PEP-484_.
 
 
-Usage is quite simple, just add type annotations to a function or method and decorate it with `@strict`
+Usage is quite simple, just add type annotations to a function or method and decorate it with `@strict`:
 
 .. code-block:: python
+
     from strict_hint import strict
 
     @strict
