@@ -5,12 +5,12 @@ from setuptools import find_packages
 setup(
     name='strict-hint',
     packages=find_packages(exclude=['tests']),
-    version='0.2.0',
+    version='0.2.1',
     description='Strict type runtime checks for arguments and return types.',
     author='Michal Wachowski',
     author_email='wachowski.michal@gmail.com',
     url='https://github.com/potfur/strict-hint',
-    download_url='https://github.com/potfur/strict-hint/tarball/0.1',
+    download_url='https://github.com/potfur/strict-hint/archive/0.2.1.tar.gz',
     keywords=['type hint', 'type validation', 'type declaration',
               'argument type', 'return type'],
     tests_require=[
