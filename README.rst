@@ -1,7 +1,7 @@
 Strict hint
 ===========
 
-**Strict hint** provides a way to do runtime type checks based based on type hint annotations introduced by _PEP-484: https://www.python.org/dev/peps/pep-0484/
+**Strict hint** provides a way to do runtime type checks based based on type hint annotations introduced by PEP-484_.
 
 
 Usage is quite simple, just add type annotations to a function or method and decorate it with `@strict`
@@ -22,3 +22,5 @@ Type checks support (for arguments and returned values):
  - tuples of types, eg: `(int, float)` will allow for both types to be accepted,
  - default values, also of different type than annotation: eg. `a: int = None`
  - used defined classes and class inheritance
+ 
+ .. _PEP-484: https://www.python.org/dev/peps/pep-0484/
