@@ -1,4 +1,4 @@
-from inspect import signature
+from inspect import signature, ismethod
 
 
 class StrictHint(object):
@@ -32,7 +32,7 @@ class StrictHint(object):
                 raise TypeError(
                     'Argument %s passed to %s must be an instance of %s,'
                     ' %s given' % (
-                        param_name, func.__name__, param.annotation,
+                        param_name, self.__func_name(func), param.annotation,
                         type(args[param_name])
                     )
                 )
@@ -45,9 +45,12 @@ class StrictHint(object):
             raise TypeError(
                 "Value returned by %s must be an instance of %s,"
                 " %s returned" % (
-                    func.__name__, sig.return_annotation, type(result)
+                    self.__func_name(func), sig.return_annotation, type(result)
                 )
             )
 
     def __matches_hint(self, value, expected, default=None):
         return isinstance(value, expected) or value == default
+
+    def __func_name(self, func):
+        return func.__qualname__.split('.<locals>.', 1)[-1]

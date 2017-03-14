@@ -166,3 +166,27 @@ def test_func_alias_raises_error_when_different_user_defined_class_passed():
 
     assert str(e.value) == "Argument r passed to func must be an instance of" \
                            " <class 'tests.Foo'>, <class 'tests.Bar'> given"
+
+
+def test_raises_error_when_required_argument_omitted():
+    @strict
+    def func(r: Foo) -> Foo:
+        return r
+
+    with raises(TypeError) as e:
+        func()
+
+    assert str(e.value) == "func() missing 1 required positional argument: 'r'"
+
+
+def test_raised_error_includes_class_name():
+    class Yada(object):
+        @strict
+        def func(self, r: Foo) -> Foo:
+            return r
+
+    with raises(TypeError) as e:
+        Yada().func(Bar())
+
+    assert str(e.value) == "Argument r passed to Yada.func must be an instance of" \
+                           " <class 'tests.Foo'>, <class 'tests.Bar'> given"
