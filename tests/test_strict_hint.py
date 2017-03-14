@@ -189,5 +189,6 @@ def test_raised_error_includes_class_name():
     with raises(TypeError) as e:
         Yada().func(Bar())
 
-    assert str(e.value) == "Argument r passed to Yada.func must be an instance of" \
-                           " <class 'tests.Foo'>, <class 'tests.Bar'> given"
+    assert str(e.value) == "Argument r passed to Yada.func must be an " \
+                           "instance of <class 'tests.Foo'>, " \
+                           "<class 'tests.Bar'> given"
