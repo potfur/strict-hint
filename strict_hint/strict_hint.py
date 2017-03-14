@@ -1,4 +1,4 @@
-from inspect import signature, ismethod
+from inspect import signature
 
 
 class StrictHint(object):
