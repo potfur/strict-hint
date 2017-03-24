@@ -180,6 +180,14 @@ def test_raises_error_when_required_argument_omitted():
     assert str(e.value) == "func() missing 1 required positional argument: 'r'"
 
 
+def test_raises_error_when_optional_argument_omitted():
+    @StrictHint()
+    def func(a, r: Foo = 2) -> tuple:
+        return a, r
+
+    assert func(1) == (1, 2)
+
+
 def test_raised_error_includes_class_name():
     class Yada(object):
         @StrictHint()

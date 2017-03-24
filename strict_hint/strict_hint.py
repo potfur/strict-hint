@@ -26,9 +26,12 @@ class StrictHint(object):
             if param.annotation == param.empty:
                 continue
 
-            if not self.__matches_hint(
-                    args[param_name], param.annotation, param.default
-            ):
+            try:
+                val = args[param_name]
+            except KeyError:
+                val = param.default
+
+            if not self.__matches_hint(val, param.annotation, param.default):
                 raise TypeError(
                     'Argument %s passed to %s must be an instance of %s,'
                     ' %s given' % (
