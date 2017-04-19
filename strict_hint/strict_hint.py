@@ -1,17 +1,16 @@
+from functools import wraps
 from inspect import signature
 
 
 class StrictHint(object):
-    def __init__(self):
-        pass
-
-    def __call__(self, wrapped):
+    def __call__(self, func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
-            sig = signature(wrapped)
+            sig = signature(func)
 
-            self.__validate_args(wrapped, sig, args)
-            result = wrapped(*args, **kwargs)
-            self.__validate_return(wrapped, sig, result)
+            self.__validate_args(func, sig, args)
+            result = func(*args, **kwargs)
+            self.__validate_return(func, sig, result)
 
             return result
 
@@ -53,6 +52,9 @@ class StrictHint(object):
             )
 
     def __matches_hint(self, value, expected, default=None):
+        if type(expected) == list:
+            expected = list
+
         return isinstance(value, expected) or value == default
 
     def __func_name(self, func):
