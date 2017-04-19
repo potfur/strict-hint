@@ -82,6 +82,19 @@ def test_raise_type_error_when_value_is_not_in_annotated_tuple():
                     " (<class 'int'>, <class 'str'>), <class 'list'> given"
 
 
+def test_func_alias_raise_type_error_when_value_is_not_a_list_of():
+    @StrictHint()
+    def func(r: [str]):
+        return r
+
+    with raises(TypeError) as e:
+        func(1)
+
+    assert str(
+        e.value) == "Argument r passed to func must be an instance of" \
+                    " [<class 'str'>], <class 'int'> given"
+
+
 def test_accepts_any_return_value_if_no_annotation():
     @StrictHint()
     def func(r):
@@ -139,6 +152,19 @@ def test_raise_error_when_value_does_not_match_annoted_tuple():
     assert str(
         e.value) == "Value returned by func must be an instance of" \
                     " (<class 'int'>, <class 'str'>), <class 'list'> returned"
+
+
+def test_raise_error_when_value_is_not_list_of():
+    @StrictHint()
+    def func(r) -> [str]:
+        return r
+
+    with raises(TypeError) as e:
+        func(1)
+
+    assert str(
+        e.value) == "Value returned by func must be an instance of" \
+                    " [<class 'str'>], <class 'int'> returned"
 
 
 def test_accept_user_defined_class():

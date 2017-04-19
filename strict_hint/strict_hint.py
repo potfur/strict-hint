@@ -53,6 +53,9 @@ class StrictHint(object):
             )
 
     def __matches_hint(self, value, expected, default=None):
+        if type(expected) == list:
+            expected = list
+
         return isinstance(value, expected) or value == default
 
     def __func_name(self, func):
