@@ -1,4 +1,5 @@
 from types import FunctionType
+from typing import List
 
 from pytest import raises
 
@@ -150,6 +151,14 @@ def test_raise_error_when_value_does_not_match_annoted_tuple():
         " (<class 'int'>, <class 'str'>), <class 'list'> returned"
 
 
+def test_accepts_list_of():
+    @strict
+    def func(r) -> [str]:
+        return r
+
+    assert func(['foo']) == ['foo']
+
+
 def test_raise_error_when_value_is_not_list_of():
     @strict
     def func(r) -> [str]:
@@ -160,6 +169,26 @@ def test_raise_error_when_value_is_not_list_of():
 
     assert str(e.value) == "Value returned by func must be an instance of" \
         " [<class 'str'>], <class 'int'> returned"
+
+
+def test_accepts_interpreter_type_list_of():
+    @strict
+    def func(r) -> List[str]:
+        return r
+
+    assert func(['foo']) == ['foo']
+
+
+def test_raise_error_when_value_is_not_interpreter_type_list_of():
+    @strict
+    def func(r) -> List[str]:
+        return r
+
+    with raises(TypeError) as e:
+        func(1)
+
+    assert str(e.value) == "Value returned by func must be an instance of" \
+        " typing.List<~T>[str], <class 'int'> returned"
 
 
 def test_accept_user_defined_class():
