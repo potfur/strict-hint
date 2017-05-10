@@ -55,7 +55,7 @@ class StrictHint(object):
         if type(expected) == list:
             expected = list
 
-        return isinstance(value, expected) or value == default
+        return value == default or isinstance(value, expected)
 
     def __func_name(self, func):
         return func.__qualname__.split('.<locals>.', 1)[-1]
