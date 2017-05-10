@@ -8,15 +8,20 @@ with open('README.rst') as readme_file:
 setup(
     name='strict-hint',
     packages=find_packages(exclude=['tests']),
-    version='0.2.3',
+    version='0.2.4',
     description='Strict type runtime checks for arguments and return types.',
     long_description=readme,
     author='Michal Wachowski',
     author_email='wachowski.michal@gmail.com',
     url='https://github.com/potfur/strict-hint',
-    download_url='https://github.com/potfur/strict-hint/archive/0.2.3.tar.gz',
-    keywords=['type hint', 'type validation', 'type declaration',
-              'argument type', 'return type'],
+    download_url='https://github.com/potfur/strict-hint/archive/0.2.4.tar.gz',
+    keywords=[
+        'type hint',
+        'type validation',
+        'type declaration',
+        'argument type',
+        'return type'
+    ],
     test_suite='tests',
     tests_require=[
         'pytest',
