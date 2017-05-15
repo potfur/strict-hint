@@ -188,7 +188,7 @@ def test_raise_error_when_value_is_not_interpreter_type_list_of():
         func(1)
 
     assert str(e.value) == "Value returned by func must be an instance of" \
-        " typing.List<~T>[str], <class 'int'> returned"
+        " %s, <class 'int'> returned" % str(List[str])
 
 
 def test_accept_user_defined_class():

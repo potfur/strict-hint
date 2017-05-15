@@ -54,8 +54,18 @@ class StrictHint(object):
     def __matches_hint(self, value, expected, default=None):
         if type(expected) == list:
             expected = list
+        elif hasattr(expected, '__origin__'):
+            expected = self.__simplify_type(expected)
 
-        return value == default or isinstance(value, expected)
+        try:
+            return value == default or isinstance(value, expected)
+        except TypeError:
+            return issubclass(value, expected)
+
+    def __simplify_type(self, expected):
+        while expected.__origin__ is not None:
+            expected = expected.__origin__
+        return expected.__extra__
 
     def __func_name(self, func):
         return func.__qualname__.split('.<locals>.', 1)[-1]
