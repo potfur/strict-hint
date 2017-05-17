@@ -68,7 +68,7 @@ class StrictHint(object):
             raise ArgumentTypeHintError(
                 name,
                 self.__func_name(self.func),
-                param.annotation,
+                self.__type_name(param.annotation),
                 type(values[name])
             )
 
@@ -88,6 +88,8 @@ class StrictHint(object):
             expected = list
         elif hasattr(expected, '__origin__'):
             expected = self.__simplify_type(expected)
+        elif hasattr(expected, '__supertype__'):
+            expected = expected.__supertype__
 
         try:
             return value == default or isinstance(value, expected)
@@ -101,3 +103,8 @@ class StrictHint(object):
 
     def __func_name(self, func):
         return func.__qualname__.split('.<locals>.', 1)[-1]
+
+    def __type_name(self, t):
+        if hasattr(t, '__supertype__'):
+            return t.__name__
+        return t

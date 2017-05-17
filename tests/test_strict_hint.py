@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, NewType
 
 from pytest import raises
 
@@ -306,6 +306,15 @@ class TestArgumentsWithTypingAnnotation:
 
         assert func([1]) == [1]
 
+    def test_accept_type_from_annotation_user_defined_type(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r: StrictHintType):
+            return r
+
+        assert isinstance(func(StrictHint()), StrictHint)
+
     def test_raise_error_when_type_different(self):
         @strict
         def func(r: Dict):
@@ -341,6 +350,20 @@ class TestArgumentsWithTypingAnnotation:
                                "instance of typing.List[int], " \
                                "<class 'str'> given"
 
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        new_type = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r: new_type):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == "Argument r passed to func must be an " \
+                               "instance of StrictHintType, " \
+                               "<class 'str'> given"
+
 
 class TestKwargsWithTypingAnnotation:
     def test_accept_type_from_annotation_dict(self):
@@ -363,6 +386,15 @@ class TestKwargsWithTypingAnnotation:
             return r, o
 
         assert func(1, o=[0]) == (1, [0])
+
+    def test_accept_type_from_annotation_user_defined_type(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r, *args, o: StrictHintType = None):
+            return r, o
+
+        assert isinstance(func(1, o=StrictHint())[1], StrictHint)
 
     def test_raise_error_when_type_different(self):
         @strict
@@ -399,6 +431,20 @@ class TestKwargsWithTypingAnnotation:
                                "instance of typing.List[int], " \
                                "<class 'str'> given"
 
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r, *args, o: StrictHintType = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == "Argument o passed to func must be an " \
+                               "instance of StrictHintType, " \
+                               "<class 'str'> given"
+
 
 class TestReturnValueWithTypingAnnotation:
     def test_accept_type_from_annotation_dict(self):
@@ -421,6 +467,15 @@ class TestReturnValueWithTypingAnnotation:
             return r
 
         assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_user_defined_type(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r) -> StrictHintType:
+            return r
+
+        assert isinstance(func(StrictHint()), StrictHint)
 
     def test_raise_error_when_type_different(self):
         @strict
@@ -455,4 +510,18 @@ class TestReturnValueWithTypingAnnotation:
 
         assert str(e.value) == "Argument r passed to func must be an " \
                                "instance of typing.List[int], " \
+                               "<class 'str'> given"
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        new_type = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r: new_type):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == "Argument r passed to func must be an " \
+                               "instance of StrictHintType, " \
                                "<class 'str'> given"
