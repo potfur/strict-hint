@@ -83,7 +83,7 @@ class StrictHint(object):
             )
 
     def __matches_hint(self, value, expected, default=None) -> bool:
-        if isinstance(expected, list):
+        if type(expected) == list:
             expected = list
         elif hasattr(expected, '__origin__'):
             expected = self.__simplify_type(expected)
