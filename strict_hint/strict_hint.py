@@ -59,11 +59,7 @@ class StrictHint(object):
         if param.annotation == param.empty:
             return
 
-        try:
-            val = values[name]
-        except KeyError:
-            val = param.default
-
+        val = values[name]
         if not self.__matches_hint(val, param.annotation, param.default):
             raise ArgumentTypeHintError(
                 name,
