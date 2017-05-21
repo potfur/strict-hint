@@ -1,61 +1,111 @@
 from functools import wraps
-from inspect import signature
+from inspect import signature, Parameter
+from typing import Tuple, List, Dict
+
+
+class TypeHintError(TypeError):
+    pass
+
+
+class ArgumentTypeHintError(TypeHintError):
+    def __init__(self, argument_name, func_name, expected_type, given_type):
+        super().__init__(
+            'Argument %s passed to %s must be an instance of %s, %s given' % (
+                argument_name, func_name, expected_type, given_type
+            )
+        )
+
+
+class ReturnValueTypeHintError(TypeHintError):
+    def __init__(self, func_name, expected_type, given_type):
+        super().__init__(
+            "Value returned by %s must be an instance of %s, %s returned" % (
+                func_name, expected_type, given_type
+            )
+        )
 
 
 class StrictHint(object):
-    def __call__(self, func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            sig = signature(func)
+    __func = None
+    __sig = None
 
-            self.__validate_args(func, sig, args)
-            result = func(*args, **kwargs)
-            self.__validate_return(func, sig, result)
+    def __call__(self, func):
+        self.__func = func
+        self.__sig = signature(func)
+
+        @wraps(self.__func)
+        def wrapper(*args, **kwargs):
+            self.__assert_args(args)
+            self.__assert_kwargs(kwargs)
+            result = self.__func(*args, **kwargs)
+            self.__assert_return(result)
 
             return result
 
         return wrapper
 
-    def __validate_args(self, func, sig, args):
-        args = dict(zip(sig.parameters.keys(), args))
-        if not args:
+    def __assert_args(self, args: tuple):
+        argvals = dict(zip(self.__sig.parameters.keys(), args))
+        if not argvals:
             return
 
-        for param_name, param in sig.parameters.items():
-            if param.annotation == param.empty:
-                continue
+        for param in argvals.keys():
+            self.__assert_param(param, self.__sig.parameters[param], argvals)
 
-            try:
-                val = args[param_name]
-            except KeyError:
-                val = param.default
-
-            if not self.__matches_hint(val, param.annotation, param.default):
-                raise TypeError(
-                    'Argument %s passed to %s must be an instance of %s,'
-                    ' %s given' % (
-                        param_name, self.__func_name(func), param.annotation,
-                        type(args[param_name])
-                    )
-                )
-
-    def __validate_return(self, func, sig, result):
-        if sig.return_annotation == sig.empty:
+    def __assert_kwargs(self, kwargs: dict):
+        if not kwargs:
             return
 
-        if not self.__matches_hint(result, sig.return_annotation):
-            raise TypeError(
-                "Value returned by %s must be an instance of %s,"
-                " %s returned" % (
-                    self.__func_name(func), sig.return_annotation, type(result)
-                )
+        for param in kwargs.keys():
+            self.__assert_param(param, self.__sig.parameters[param], kwargs)
+
+    def __assert_param(self, name: str, param: Parameter, values: dict):
+        if param.annotation == param.empty:
+            return
+
+        val = values[name]
+        if not self.__matches_hint(val, param.annotation, param.default):
+            raise ArgumentTypeHintError(
+                name,
+                self.__func_name(self.__func),
+                param.annotation,
+                type(values[name])
             )
 
-    def __matches_hint(self, value, expected, default=None):
+    def __assert_return(self, result: Parameter):
+        if self.__sig.return_annotation == self.__sig.empty:
+            return
+
+        if not self.__matches_hint(result, self.__sig.return_annotation):
+            raise ReturnValueTypeHintError(
+                self.__func_name(self.__func),
+                self.__sig.return_annotation,
+                type(result)
+            )
+
+    def __matches_hint(self, value, expected, default=None) -> bool:
         if type(expected) == list:
             expected = list
 
-        return isinstance(value, expected) or value == default
+        try:
+            if expected.__module__ == 'typing':
+                expected = self.__simplify_typing(expected)
+        except AttributeError:
+            pass
 
-    def __func_name(self, func):
+        return value == default or isinstance(value, expected)
+
+    def __simplify_typing(self, expected):
+        mapping = {
+            Tuple.__name__: tuple,
+            List.__name__: list,
+            Dict.__name__: dict,
+        }
+        if expected.__name__ in mapping:
+            return mapping[expected.__name__]
+
+        if hasattr(expected, '__supertype__'):
+            return expected.__supertype__
+
+    def __func_name(self, func) -> str:
         return func.__qualname__.split('.<locals>.', 1)[-1]

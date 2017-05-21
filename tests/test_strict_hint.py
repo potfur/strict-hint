@@ -1,227 +1,553 @@
 from types import FunctionType
+from typing import Dict, Tuple, List, NewType
 
 from pytest import raises
 
 from strict_hint import strict
-from tests import Foo, Bar
+from strict_hint.strict_hint import StrictHint
 
 
-def test_func_alias_func_alias_accept_any_arg_when_no_annotation():
-    @strict
-    def func(r):
-        return r
+class TestArgsWithPrimitiveAnnotation:
+    error_msg = "Argument r passed to func must be an instance of %s, %s given"
 
-    assert func(1) == 1
-    assert func('lorem ipsum') == 'lorem ipsum'
-
-
-def test_func_alias_accept_arg_with_value_matching_annotation():
-    @strict
-    def func(r: int):
-        return r
-
-    assert func(1) == 1
-
-
-def test_func_alias_accept_arg_with_value_matching_standard_interpreter_type():
-    @strict
-    def func(r: FunctionType):
-        return r
-
-    assert func(strict) == strict
-
-
-def test_func_alias_raise_type_error_arg_value_does_not_match_annotation():
-    @strict
-    def func(r: int):
-        return r
-
-    with raises(TypeError) as e:
-        func('lorem ipsum')
-
-    assert str(e.value) == "Argument r passed to func must be an instance of" \
-                           " <class 'int'>, <class 'str'> given"
-
-
-def test_func_alias_accept_default_value_even_when_different_type():
-    @strict
-    def func(r: int = 'foo'):
-        return r
-
-    assert func() == 'foo'
-
-
-def test_func_alias_accept_value_equal_to_default_value_when_different_type():
-    @strict
-    def func(r: int = 'foo'):
-        return r
-
-    assert func('foo') == 'foo'
-
-
-def test_func_alias_accept_value_when_matches_one_of_annotated_types():
-    @strict
-    def func(a: (int, str)):
-        pass
-
-    func(1)
-    func('lorem ipsum')
-
-
-def test_func_alias_raise_type_error_when_value_is_not_in_annotated_tuple():
-    @strict
-    def func(r: (int, str)):
-        return r
-
-    with raises(TypeError) as e:
-        func([])
-
-    assert str(
-        e.value) == "Argument r passed to func must be an instance of" \
-                    " (<class 'int'>, <class 'str'>), <class 'list'> given"
-
-
-def test_func_alias_raise_type_error_when_value_is_not_a_list_of():
-    @strict
-    def func(r: [str]):
-        return r
-
-    with raises(TypeError) as e:
-        func(1)
-
-    assert str(
-        e.value) == "Argument r passed to func must be an instance of" \
-                    " [<class 'str'>], <class 'int'> given"
-
-
-def test_func_alias_accepts_any_return_value_if_no_annotation():
-    @strict
-    def func(r):
-        return r
-
-    assert func(1) == 1
-    assert func('lorem ipsum') == 'lorem ipsum'
-
-
-def test_func_alias_accept_return_value_matching_annotation():
-    @strict
-    def func(r) -> str:
-        return r
-
-    assert func('lorem ipsum') == 'lorem ipsum'
-
-
-def test_func_alias_accept_return_value_matching_standard_interpreter_type():
-    @strict
-    def func(r) -> FunctionType:
-        return r
-
-    assert func(strict) == strict
-
-
-def test_func_alias_accept_return_value_matching_annotated_tuple():
-    @strict
-    def func(r) -> (int, str):
-        return r
-
-    assert func(1) == 1
-    assert func('lorem ipsum') == 'lorem ipsum'
-
-
-def test_func_alias_raise_error_when_value_does_not_match_annotation():
-    @strict
-    def func(r) -> str:
-        return r
-
-    with raises(TypeError) as e:
-        func(1)
-
-    assert str(e.value) == "Value returned by func must be an instance of" \
-                           " <class 'str'>, <class 'int'> returned"
-
-
-def test_func_alias_raise_error_when_value_does_not_match_annoted_tuple():
-    @strict
-    def func(r) -> (int, str):
-        return r
-
-    with raises(TypeError) as e:
-        func([])
-
-    assert str(
-        e.value) == "Value returned by func must be an instance of" \
-                    " (<class 'int'>, <class 'str'>), <class 'list'> returned"
-
-
-def test_raise_error_when_value_is_not_list_of():
-    @strict
-    def func(r) -> [str]:
-        return r
-
-    with raises(TypeError) as e:
-        func(1)
-
-    assert str(
-        e.value) == "Value returned by func must be an instance of" \
-                    " [<class 'str'>], <class 'int'> returned"
-
-
-def test_func_alias_accept_user_defined_class():
-    @strict
-    def func(r: Foo) -> Foo:
-        return r
-
-    assert func(Foo())
-
-
-def test_func_alias_accept_user_defined_class_inheritance():
-    @strict
-    def func(r: object) -> object:
-        return r
-
-    assert func(Foo())
-
-
-def test_func_alias_raises_error_when_different_user_defined_class_passed():
-    @strict
-    def func(r: Foo) -> Foo:
-        return r
-
-    with raises(TypeError) as e:
-        func(Bar())
-
-    assert str(e.value) == "Argument r passed to func must be an instance of" \
-                           " <class 'tests.Foo'>, <class 'tests.Bar'> given"
-
-
-def test_raises_error_when_required_argument_omitted():
-    @strict
-    def func(r: Foo) -> Foo:
-        return r
-
-    with raises(TypeError) as e:
-        func()
-
-    assert str(e.value) == "func() missing 1 required positional argument: 'r'"
-
-
-def test_raises_error_when_optional_argument_omitted():
-    @strict
-    def func(a, r: Foo = 2) -> tuple:
-        return a, r
-
-    assert func(1) == (1, 2)
-
-
-def test_raised_error_includes_class_name():
-    class Yada:
+    def test_accept_no_arguments(self):
         @strict
-        def func(self, r: Foo) -> Foo:
+        def func():
+            return ''
+
+        assert func() == ''
+
+    def test_accept_when_no_annotation(self):
+        @strict
+        def func(r):
             return r
 
-    with raises(TypeError) as e:
-        Yada().func(Bar())
+        assert func(1) == 1
 
-    assert str(e.value) == "Argument r passed to Yada.func must be an " \
-                           "instance of <class 'tests.Foo'>, " \
-                           "<class 'tests.Bar'> given"
+    def test_accept_type_from_annotation(self):
+        @strict
+        def func(r: int):
+            return r
+
+        assert func(1) == 1
+
+    def test_accept_type_from_annotation_tuple(self):
+        @strict
+        def func(r: (int, str)):
+            return r
+
+        assert func(1) == 1
+        assert func('one') == 'one'
+
+    def test_accept_type_from_annotation_list_of(self):
+        @strict
+        def func(r: [int]):
+            return r
+
+        assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_interpreter_type(self):
+        @strict
+        def func(r: FunctionType):
+            return r
+
+        assert func(func) == func
+
+    def test_accept_type_from_annotation_user_defined_class(self):
+        @strict
+        def func(r: StrictHint):
+            return r
+
+        assert isinstance(func(StrictHint()), StrictHint)
+
+    def test_accept_default_value(self):
+        @strict
+        def func(r: int = 1):
+            return r
+
+        assert func() == 1
+
+    def test_accept_default_value_even_when_different_type(self):
+        @strict
+        def func(r: int = 'foo'):
+            return r
+
+        assert func() == 'foo'
+
+    def test_raise_error_when_type_different(self):
+        @strict
+        def func(r: int):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (int, str)
+
+    def test_raise_error_when_type_not_in_tuple(self):
+        @strict
+        def func(r: (int, float)):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % ((int, float), str)
+
+    def test_raise_error_when_type_not_a_list_of(self):
+        @strict
+        def func(r: [int]):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % ([int], str)
+
+    def test_raise_error_when_type_not_a_interpreter_type(self):
+        @strict
+        def func(r: FunctionType):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (FunctionType, str)
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        @strict
+        def func(r: StrictHint):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (StrictHint, str)
+
+
+class TestKwargsWithPrimitiveAnnotation:
+    error_msg = "Argument o passed to func must be an instance of %s, %s given"
+
+    def test_accept_when_no_annotation(self):
+        @strict
+        def func(r, *args, o=False):
+            return r, o
+
+        assert func(1, o=True) == (1, True)
+
+    def test_accept_type_from_annotation(self):
+        @strict
+        def func(r, *args, o: bool = False):
+            return r, o
+
+        assert func(1, o=True) == (1, True)
+
+    def test_accept_type_from_annotation_tuple(self):
+        @strict
+        def func(r, *args, o: (int, float) = 0):
+            return r, o
+
+        assert func(1, o=1) == (1, 1)
+
+    def test_accept_type_from_annotation_list_of(self):
+        @strict
+        def func(r, *args, o: [int] = None):
+            return r, o
+
+        assert func(1, o=[0]) == (1, [0])
+
+    def test_accept_type_from_annotation_interpreter_type(self):
+        @strict
+        def func(r, *args, o: FunctionType = None):
+            return r, o
+
+        assert func(1, o=func) == (1, func)
+
+    def test_accept_type_from_annotation_user_defined_class(self):
+        @strict
+        def func(r, *args, o: StrictHint = None):
+            return r, o
+
+        assert isinstance(func(1, o=StrictHint())[1], StrictHint)
+
+    def test_accept_default_value(self):
+        @strict
+        def func(r, *args, o: int = 0):
+            return r, o
+
+        assert func(1) == (1, 0)
+
+    def test_accept_default_value_even_when_different_type(self):
+        @strict
+        def func(r, *args, o: float = 'foo'):
+            return r, o
+
+        assert func(1) == (1, 'foo')
+
+    def test_raise_error_when_type_different(self):
+        @strict
+        def func(r, *args, o: bool = False):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (bool, str)
+
+    def test_raise_error_when_type_not_in_tuple(self):
+        @strict
+        def func(r, *args, o: (int, float) = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % ((int, float), str)
+
+    def test_raise_error_when_type_not_a_list_of(self):
+        @strict
+        def func(r, *args, o: [int] = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % ([int], str)
+
+    def test_raise_error_when_type_not_a_interpreter_type(self):
+        @strict
+        def func(r, *args, o: FunctionType = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (FunctionType, str)
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        @strict
+        def func(r, *args, o: StrictHint = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (StrictHint, str)
+
+
+class TestReturnValueWithPrimitiveAnnotation:
+    error_msg = "Value returned by func must be an instance of %s, %s returned"
+
+    def test_accept_type_from_annotation(self):
+        @strict
+        def func(r) -> int:
+            return r
+
+        assert func(1) == 1
+
+    def test_accept_type_from_annotation_tuple(self):
+        @strict
+        def func(r) -> (int, str):
+            return r
+
+        assert func(1) == 1
+        assert func('one') == 'one'
+
+    def test_accept_type_from_annotation_list_of(self):
+        @strict
+        def func(r) -> [int]:
+            return r
+
+        assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_interpreter_type(self):
+        @strict
+        def func(r) -> FunctionType:
+            return r
+
+        assert func(func) == func
+
+    def test_accept_type_from_annotation_user_defined_class(self):
+        @strict
+        def func(r) -> StrictHint:
+            return r
+
+        assert isinstance(func(StrictHint()), StrictHint)
+
+    def test_raise_error_when_type_different(self):
+        @strict
+        def func(r) -> int:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (int, str)
+
+    def test_raise_error_when_type_not_in_tuple(self):
+        @strict
+        def func(r) -> (int, float):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % ((int, float), str)
+
+    def test_raise_error_when_type_not_a_list_of(self):
+        @strict
+        def func(r) -> [int]:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % ([int], str)
+
+    def test_raise_error_when_type_not_a_interpreter_type(self):
+        @strict
+        def func(r) -> FunctionType:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (FunctionType, str)
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        @strict
+        def func(r) -> StrictHint:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (StrictHint, str)
+
+
+class TestArgumentsWithTypingAnnotation:
+    error_msg = "Argument r passed to func must be an instance of %s, %s given"
+
+    def test_accept_type_from_annotation_dict(self):
+        @strict
+        def func(r: Dict):
+            return r
+
+        assert func({}) == {}
+
+    def test_accept_type_from_annotation_tuple(self):
+        @strict
+        def func(r: Tuple[int, str]):
+            return r
+
+        assert func((1, 'foo')) == (1, 'foo')
+
+    def test_accept_type_from_annotation_list_of(self):
+        @strict
+        def func(r: List[int]):
+            return r
+
+        assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_user_defined_type(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r: StrictHintType):
+            return r
+
+        assert isinstance(func(StrictHint()), StrictHint)
+
+    def test_raise_error_when_type_different(self):
+        @strict
+        def func(r: Dict):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (Dict, str)
+
+    def test_raise_error_when_type_not_in_tuple(self):
+        @strict
+        def func(r: Tuple[int, str]):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (Tuple[int, str], str)
+
+    def test_raise_error_when_type_not_a_list_of(self):
+        @strict
+        def func(r: List[int]):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (List[int], str)
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r: StrictHintType):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (StrictHintType, str)
+
+
+class TestKwargsWithTypingAnnotation:
+    error_msg = "Argument o passed to func must be an instance of %s, %s given"
+
+    def test_accept_type_from_annotation_dict(self):
+        @strict
+        def func(r, *args, o: Dict = False):
+            return r, o
+
+        assert func(1, o={}) == (1, {})
+
+    def test_accept_type_from_annotation_tuple(self):
+        @strict
+        def func(r, *args, o: Tuple[int, str] = 0):
+            return r, o
+
+        assert func(1, o=(1, 'foo')) == (1, (1, 'foo'))
+
+    def test_accept_type_from_annotation_list_of(self):
+        @strict
+        def func(r, *args, o: List[int] = None):
+            return r, o
+
+        assert func(1, o=[0]) == (1, [0])
+
+    def test_accept_type_from_annotation_user_defined_type(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r, *args, o: StrictHintType = None):
+            return r, o
+
+        assert isinstance(func(1, o=StrictHint())[1], StrictHint)
+
+    def test_raise_error_when_type_different(self):
+        @strict
+        def func(r, *args, o: Dict = None):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (Dict, str)
+
+    def test_raise_error_when_type_not_in_tuple(self):
+        @strict
+        def func(r, *args, o: Tuple[int, float] = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (Tuple[int, float], str)
+
+    def test_raise_error_when_type_not_a_list_of(self):
+        @strict
+        def func(r, *args, o: List[int] = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (List[int], str)
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r, *args, o: StrictHintType = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == self.error_msg % (StrictHintType, str)
+
+
+class TestReturnValueWithTypingAnnotation:
+    error_msg = "Value returned by func must be an instance of %s, %s returned"
+
+    def test_accept_type_from_annotation_dict(self):
+        @strict
+        def func(r) -> Dict:
+            return r
+
+        assert func({}) == {}
+
+    def test_accept_type_from_annotation_tuple(self):
+        @strict
+        def func(r) -> Tuple[int, str]:
+            return r
+
+        assert func((1, 'foo')) == (1, 'foo')
+
+    def test_accept_type_from_annotation_list_of(self):
+        @strict
+        def func(r) -> List[int]:
+            return r
+
+        assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_user_defined_type(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r) -> StrictHintType:
+            return r
+
+        assert isinstance(func(StrictHint()), StrictHint)
+
+    def test_raise_error_when_type_different(self):
+        @strict
+        def func(r) -> Dict:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (Dict, str)
+
+    def test_raise_error_when_type_not_in_tuple(self):
+        @strict
+        def func(r) -> Tuple[int, str]:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (Tuple[int, str], str)
+
+    def test_raise_error_when_type_not_a_list_of(self):
+        @strict
+        def func(r) -> List[int]:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (List[int], str)
+
+    def test_raise_error_when_type_not_a_user_defined_class(self):
+        StrictHintType = NewType('StrictHintType', StrictHint)
+
+        @strict
+        def func(r) -> StrictHintType:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == self.error_msg % (StrictHintType, str)
