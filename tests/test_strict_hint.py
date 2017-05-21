@@ -8,6 +8,8 @@ from strict_hint.strict_hint import StrictHint
 
 
 class TestArgsWithPrimitiveAnnotation:
+    error_msg = "Argument r passed to func must be an instance of %s, %s given"
+
     def test_accept_no_arguments(self):
         @strict
         def func():
@@ -80,8 +82,7 @@ class TestArgsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of <class 'int'>, <class 'str'> given"
+        assert str(e.value) == self.error_msg % (int, str)
 
     def test_raise_error_when_type_not_in_tuple(self):
         @strict
@@ -91,9 +92,7 @@ class TestArgsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of (<class 'int'>, <class 'float'>)" \
-                               ", <class 'str'> given"
+        assert str(e.value) == self.error_msg % ((int, float), str)
 
     def test_raise_error_when_type_not_a_list_of(self):
         @strict
@@ -103,9 +102,7 @@ class TestArgsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of [<class 'int'>], <class 'str'> " \
-                               "given"
+        assert str(e.value) == self.error_msg % ([int], str)
 
     def test_raise_error_when_type_not_a_interpreter_type(self):
         @strict
@@ -115,9 +112,7 @@ class TestArgsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of <class 'function'>, " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (FunctionType, str)
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
         @strict
@@ -127,13 +122,12 @@ class TestArgsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of " \
-                               "<class 'strict_hint.strict_hint.StrictHint'>" \
-                               ", <class 'str'> given"
+        assert str(e.value) == self.error_msg % (StrictHint, str)
 
 
 class TestKwargsWithPrimitiveAnnotation:
+    error_msg = "Argument o passed to func must be an instance of %s, %s given"
+
     def test_accept_when_no_annotation(self):
         @strict
         def func(r, *args, o=False):
@@ -198,9 +192,7 @@ class TestKwargsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of <class 'bool'>, " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (bool, str)
 
     def test_raise_error_when_type_not_in_tuple(self):
         @strict
@@ -210,9 +202,7 @@ class TestKwargsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of (<class 'int'>, <class 'float'>)" \
-                               ", <class 'str'> given"
+        assert str(e.value) == self.error_msg % ((int, float), str)
 
     def test_raise_error_when_type_not_a_list_of(self):
         @strict
@@ -222,9 +212,7 @@ class TestKwargsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of [<class 'int'>], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % ([int], str)
 
     def test_raise_error_when_type_not_a_interpreter_type(self):
         @strict
@@ -234,9 +222,7 @@ class TestKwargsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of <class 'function'>, " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (FunctionType, str)
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
         @strict
@@ -246,13 +232,12 @@ class TestKwargsWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of " \
-                               "<class 'strict_hint.strict_hint.StrictHint'>" \
-                               ", <class 'str'> given"
+        assert str(e.value) == self.error_msg % (StrictHint, str)
 
 
 class TestReturnValueWithPrimitiveAnnotation:
+    error_msg = "Value returned by func must be an instance of %s, %s returned"
+
     def test_accept_type_from_annotation(self):
         @strict
         def func(r) -> int:
@@ -297,8 +282,7 @@ class TestReturnValueWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Value returned by func must be an instance " \
-                               "of <class 'int'>, <class 'str'> returned"
+        assert str(e.value) == self.error_msg % (int, str)
 
     def test_raise_error_when_type_not_in_tuple(self):
         @strict
@@ -308,9 +292,7 @@ class TestReturnValueWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Value returned by func must be an instance " \
-                               "of (<class 'int'>, <class 'float'>), " \
-                               "<class 'str'> returned"
+        assert str(e.value) == self.error_msg % ((int, float), str)
 
     def test_raise_error_when_type_not_a_list_of(self):
         @strict
@@ -320,8 +302,7 @@ class TestReturnValueWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Value returned by func must be an instance " \
-                               "of [<class 'int'>], <class 'str'> returned"
+        assert str(e.value) == self.error_msg % ([int], str)
 
     def test_raise_error_when_type_not_a_interpreter_type(self):
         @strict
@@ -331,9 +312,7 @@ class TestReturnValueWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Value returned by func must be an " \
-                               "instance of <class 'function'>, " \
-                               "<class 'str'> returned"
+        assert str(e.value) == self.error_msg % (FunctionType, str)
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
         @strict
@@ -343,13 +322,12 @@ class TestReturnValueWithPrimitiveAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Value returned by func must be an instance " \
-                               "of " \
-                               "<class 'strict_hint.strict_hint.StrictHint'>" \
-                               ", <class 'str'> returned"
+        assert str(e.value) == self.error_msg % (StrictHint, str)
 
 
 class TestArgumentsWithTypingAnnotation:
+    error_msg = "Argument r passed to func must be an instance of %s, %s given"
+
     def test_accept_type_from_annotation_dict(self):
         @strict
         def func(r: Dict):
@@ -388,8 +366,7 @@ class TestArgumentsWithTypingAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of typing.Dict, <class 'str'> given"
+        assert str(e.value) == self.error_msg % (Dict, str)
 
     def test_raise_error_when_type_not_in_tuple(self):
         @strict
@@ -399,9 +376,7 @@ class TestArgumentsWithTypingAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of typing.Tuple[int, str], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (Tuple[int, str], str)
 
     def test_raise_error_when_type_not_a_list_of(self):
         @strict
@@ -411,26 +386,24 @@ class TestArgumentsWithTypingAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of typing.List[int], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (List[int], str)
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
-        new_type = NewType('StrictHintType', StrictHint)
+        StrictHintType = NewType('StrictHintType', StrictHint)
 
         @strict
-        def func(r: new_type):
+        def func(r: StrictHintType):
             return r
 
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of StrictHintType, " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (StrictHintType, str)
 
 
 class TestKwargsWithTypingAnnotation:
+    error_msg = "Argument o passed to func must be an instance of %s, %s given"
+
     def test_accept_type_from_annotation_dict(self):
         @strict
         def func(r, *args, o: Dict = False):
@@ -469,8 +442,7 @@ class TestKwargsWithTypingAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of typing.Dict, <class 'str'> given"
+        assert str(e.value) == self.error_msg % (Dict, str)
 
     def test_raise_error_when_type_not_in_tuple(self):
         @strict
@@ -480,9 +452,7 @@ class TestKwargsWithTypingAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of typing.Tuple[int, float], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (Tuple[int, float], str)
 
     def test_raise_error_when_type_not_a_list_of(self):
         @strict
@@ -492,9 +462,7 @@ class TestKwargsWithTypingAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of typing.List[int], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (List[int], str)
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
         StrictHintType = NewType('StrictHintType', StrictHint)
@@ -506,12 +474,12 @@ class TestKwargsWithTypingAnnotation:
         with raises(TypeError) as e:
             func(1, o='foo')
 
-        assert str(e.value) == "Argument o passed to func must be an " \
-                               "instance of StrictHintType, " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (StrictHintType, str)
 
 
 class TestReturnValueWithTypingAnnotation:
+    error_msg = "Value returned by func must be an instance of %s, %s returned"
+
     def test_accept_type_from_annotation_dict(self):
         @strict
         def func(r) -> Dict:
@@ -550,43 +518,36 @@ class TestReturnValueWithTypingAnnotation:
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Value returned by func must be an instance " \
-                               "of typing.Dict, <class 'str'> returned"
+        assert str(e.value) == self.error_msg % (Dict, str)
 
     def test_raise_error_when_type_not_in_tuple(self):
         @strict
-        def func(r: Tuple[int, str]):
+        def func(r) -> Tuple[int, str]:
             return r
 
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of typing.Tuple[int, str], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (Tuple[int, str], str)
 
     def test_raise_error_when_type_not_a_list_of(self):
         @strict
-        def func(r: List[int]):
+        def func(r) -> List[int]:
             return r
 
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of typing.List[int], " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (List[int], str)
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
-        new_type = NewType('StrictHintType', StrictHint)
+        StrictHintType = NewType('StrictHintType', StrictHint)
 
         @strict
-        def func(r: new_type):
+        def func(r) -> StrictHintType:
             return r
 
         with raises(TypeError) as e:
             func('foo')
 
-        assert str(e.value) == "Argument r passed to func must be an " \
-                               "instance of StrictHintType, " \
-                               "<class 'str'> given"
+        assert str(e.value) == self.error_msg % (StrictHintType, str)
