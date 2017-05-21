@@ -1,3 +1,4 @@
+from types import FunctionType
 from typing import Dict, Tuple, List, NewType
 
 from pytest import raises
@@ -7,6 +8,13 @@ from strict_hint.strict_hint import StrictHint
 
 
 class TestArgsWithPrimitiveAnnotation:
+    def test_accept_no_arguments(self):
+        @strict
+        def func():
+            return ''
+
+        assert func() == ''
+
     def test_accept_when_no_annotation(self):
         @strict
         def func(r):
@@ -35,6 +43,13 @@ class TestArgsWithPrimitiveAnnotation:
             return r
 
         assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_interpreter_type(self):
+        @strict
+        def func(r: FunctionType):
+            return r
+
+        assert func(func) == func
 
     def test_accept_type_from_annotation_user_defined_class(self):
         @strict
@@ -92,6 +107,18 @@ class TestArgsWithPrimitiveAnnotation:
                                "instance of [<class 'int'>], <class 'str'> " \
                                "given"
 
+    def test_raise_error_when_type_not_a_interpreter_type(self):
+        @strict
+        def func(r: FunctionType):
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == "Argument r passed to func must be an " \
+                               "instance of <class 'function'>, " \
+                               "<class 'str'> given"
+
     def test_raise_error_when_type_not_a_user_defined_class(self):
         @strict
         def func(r: StrictHint):
@@ -134,6 +161,13 @@ class TestKwargsWithPrimitiveAnnotation:
             return r, o
 
         assert func(1, o=[0]) == (1, [0])
+
+    def test_accept_type_from_annotation_interpreter_type(self):
+        @strict
+        def func(r, *args, o: FunctionType = None):
+            return r, o
+
+        assert func(1, o=func) == (1, func)
 
     def test_accept_type_from_annotation_user_defined_class(self):
         @strict
@@ -192,6 +226,18 @@ class TestKwargsWithPrimitiveAnnotation:
                                "instance of [<class 'int'>], " \
                                "<class 'str'> given"
 
+    def test_raise_error_when_type_not_a_interpreter_type(self):
+        @strict
+        def func(r, *args, o: FunctionType = 0):
+            return r, o
+
+        with raises(TypeError) as e:
+            func(1, o='foo')
+
+        assert str(e.value) == "Argument o passed to func must be an " \
+                               "instance of <class 'function'>, " \
+                               "<class 'str'> given"
+
     def test_raise_error_when_type_not_a_user_defined_class(self):
         @strict
         def func(r, *args, o: StrictHint = 0):
@@ -228,6 +274,13 @@ class TestReturnValueWithPrimitiveAnnotation:
             return r
 
         assert func([1]) == [1]
+
+    def test_accept_type_from_annotation_interpreter_type(self):
+        @strict
+        def func(r) -> FunctionType:
+            return r
+
+        assert func(func) == func
 
     def test_accept_type_from_annotation_user_defined_class(self):
         @strict
@@ -269,6 +322,18 @@ class TestReturnValueWithPrimitiveAnnotation:
 
         assert str(e.value) == "Value returned by func must be an instance " \
                                "of [<class 'int'>], <class 'str'> returned"
+
+    def test_raise_error_when_type_not_a_interpreter_type(self):
+        @strict
+        def func(r) -> FunctionType:
+            return r
+
+        with raises(TypeError) as e:
+            func('foo')
+
+        assert str(e.value) == "Value returned by func must be an " \
+                               "instance of <class 'function'>, " \
+                               "<class 'str'> returned"
 
     def test_raise_error_when_type_not_a_user_defined_class(self):
         @strict

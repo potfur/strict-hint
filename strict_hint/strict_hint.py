@@ -91,10 +91,7 @@ class StrictHint(object):
         elif hasattr(expected, '__supertype__'):
             expected = expected.__supertype__
 
-        try:
-            return value == default or isinstance(value, expected)
-        except TypeError:
-            return issubclass(value, expected)
+        return value == default or isinstance(value, expected)
 
     def __simplify_type(self, expected):
         while expected.__origin__ is not None:
