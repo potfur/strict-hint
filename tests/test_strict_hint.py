@@ -63,14 +63,14 @@ class TestArgsWithPrimitiveAnnotation:
         def func(r: int = 1):
             return r
 
-        assert func(1) == 1
+        assert func() == 1
 
     def test_accept_default_value_even_when_different_type(self):
         @strict
-        def func(r: int = None):
+        def func(r: int = 'foo'):
             return r
 
-        assert func(None) is None
+        assert func() == 'foo'
 
     def test_raise_error_when_type_different(self):
         @strict
@@ -181,14 +181,14 @@ class TestKwargsWithPrimitiveAnnotation:
         def func(r, *args, o: int = 0):
             return r, o
 
-        assert func(1, o=0) == (1, 0)
+        assert func(1) == (1, 0)
 
     def test_accept_default_value_even_when_different_type(self):
         @strict
-        def func(r, *args, o: float = 0):
+        def func(r, *args, o: float = 'foo'):
             return r, o
 
-        assert func(1, o=0) == (1, 0)
+        assert func(1) == (1, 'foo')
 
     def test_raise_error_when_type_different(self):
         @strict
