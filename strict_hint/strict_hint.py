@@ -1,5 +1,6 @@
 from functools import wraps
 from inspect import signature, Parameter
+from typing import Tuple, List, Dict
 
 
 class TypeHintError(TypeError):
@@ -67,7 +68,7 @@ class StrictHint(object):
             raise ArgumentTypeHintError(
                 name,
                 self.__func_name(self.__func),
-                self.__type_name(param.annotation),
+                param.annotation,
                 type(values[name])
             )
 
@@ -85,22 +86,26 @@ class StrictHint(object):
     def __matches_hint(self, value, expected, default=None) -> bool:
         if type(expected) == list:
             expected = list
-        elif hasattr(expected, '__origin__'):
-            expected = self.__simplify_type(expected)
-        elif hasattr(expected, '__supertype__'):
-            expected = expected.__supertype__
+
+        try:
+            if expected.__module__ == 'typing':
+                expected = self.__simplify_typing(expected)
+        except AttributeError:
+            pass
 
         return value == default or isinstance(value, expected)
 
-    def __simplify_type(self, expected):
-        while expected.__origin__ is not None:
-            expected = expected.__origin__
-        return expected.__extra__
+    def __simplify_typing(self, expected):
+        mapping = {
+            Tuple.__name__: tuple,
+            List.__name__: list,
+            Dict.__name__: dict,
+        }
+        if expected.__name__ in mapping:
+            return mapping[expected.__name__]
+
+        if hasattr(expected, '__supertype__'):
+            return expected.__supertype__
 
     def __func_name(self, func) -> str:
         return func.__qualname__.split('.<locals>.', 1)[-1]
-
-    def __type_name(self, typ) -> str:
-        if hasattr(typ, '__supertype__'):
-            return typ.__name__
-        return typ
