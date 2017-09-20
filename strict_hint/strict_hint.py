@@ -1,6 +1,6 @@
 from functools import wraps
 from inspect import signature, Parameter
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Type
 
 
 class TypeHintError(TypeError):
@@ -8,7 +8,9 @@ class TypeHintError(TypeError):
 
 
 class ArgumentTypeHintError(TypeHintError):
-    def __init__(self, argument_name, func_name, expected_type, given_type):
+    def __init__(
+            self, argument_name, func_name, expected_type, given_type
+    ) -> None:
         super().__init__(
             'Argument %s passed to %s must be an instance of %s, %s given' % (
                 argument_name, func_name, expected_type, given_type
@@ -17,7 +19,9 @@ class ArgumentTypeHintError(TypeHintError):
 
 
 class ReturnValueTypeHintError(TypeHintError):
-    def __init__(self, func_name, expected_type, given_type):
+    def __init__(
+            self, func_name, expected_type, given_type
+    ) -> None:
         super().__init__(
             "Value returned by %s must be an instance of %s, %s returned" % (
                 func_name, expected_type, given_type
@@ -44,7 +48,7 @@ class StrictHint(object):
 
         return wrapper
 
-    def __assert_args(self, args: tuple):
+    def __assert_args(self, args: tuple) -> None:
         argvals = dict(zip(self.__sig.parameters.keys(), args))
         if not argvals:
             return
@@ -52,14 +56,16 @@ class StrictHint(object):
         for param in argvals.keys():
             self.__assert_param(param, self.__sig.parameters[param], argvals)
 
-    def __assert_kwargs(self, kwargs: dict):
+    def __assert_kwargs(self, kwargs: dict) -> None:
         if not kwargs:
             return
 
         for param in kwargs.keys():
             self.__assert_param(param, self.__sig.parameters[param], kwargs)
 
-    def __assert_param(self, name: str, param: Parameter, values: dict):
+    def __assert_param(
+            self, name: str, param: Parameter, values: dict
+    ) -> None:
         if param.annotation == param.empty:
             return
 
@@ -72,7 +78,7 @@ class StrictHint(object):
                 type(values[name])
             )
 
-    def __assert_return(self, result: Parameter):
+    def __assert_return(self, result: Parameter) -> None:
         if self.__sig.return_annotation == self.__sig.empty:
             return
 
@@ -95,7 +101,10 @@ class StrictHint(object):
 
         return value == default or isinstance(value, expected)
 
-    def __simplify_typing(self, expected):
+    def __simplify_typing(self, expected) -> Type:
+        if not hasattr(expected, '__name__'):
+            return expected.__args__
+
         mapping = {
             Tuple.__name__: tuple,
             List.__name__: list,
