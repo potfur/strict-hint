@@ -1,5 +1,5 @@
 from types import FunctionType
-from typing import Dict, Tuple, List, NewType
+from typing import Dict, Tuple, List, NewType, Optional, Union
 
 from pytest import raises
 
@@ -358,6 +358,28 @@ class TestArgumentsWithTypingAnnotation:
 
         assert isinstance(func(StrictHint()), StrictHint)
 
+    def test_accept_type_from_annotation_optional(self):
+        @strict
+        def func(r: Optional[str]):
+            return r
+
+        assert func('str') == 'str'
+
+    def test_accept_type_from_annotation_optional_when_none(self):
+        @strict
+        def func(r: Optional[str]):
+            return r
+
+        assert func(None) is None
+
+    def test_accept_type_from_annotation_union(self):
+        @strict
+        def func(r: Union[str, int]):
+            return r
+
+        assert func('foo') == 'foo'
+        assert func(1) == 1
+
     def test_raise_error_when_type_different(self):
         @strict
         def func(r: Dict):
@@ -434,6 +456,28 @@ class TestKwargsWithTypingAnnotation:
 
         assert isinstance(func(1, o=StrictHint())[1], StrictHint)
 
+    def test_accept_type_from_annotation_optional(self):
+        @strict
+        def func(r, *args, o: Optional[str] = None):
+            return r, o
+
+        assert func(0, o='str') == (0, 'str')
+
+    def test_accept_type_from_annotation_optional_when_none(self):
+        @strict
+        def func(r, *args, o: Optional[str] = None):
+            return r, o
+
+        assert func(0, o=None) == (0, None)
+
+    def test_accept_type_from_annotation_union(self) -> None:
+        @strict
+        def func(r, *args, o: Union[str, int] = None):
+            return r, o
+
+        assert func(0, o='foo') == (0, 'foo')
+        assert func(0, o=1) == (0, 1)
+
     def test_raise_error_when_type_different(self):
         @strict
         def func(r, *args, o: Dict = None):
@@ -509,6 +553,28 @@ class TestReturnValueWithTypingAnnotation:
             return r
 
         assert isinstance(func(StrictHint()), StrictHint)
+
+    def test_accept_type_from_annotation_optional(self):
+        @strict
+        def func(r) -> Optional[str]:
+            return r
+
+        assert func('foo') == 'foo'
+
+    def test_accept_type_from_annotation_optional_when_none(self):
+        @strict
+        def func(r) -> Optional[str]:
+            return r
+
+        assert func(None) is None
+
+    def test_accept_type_from_annotation_union(self):
+        @strict
+        def func(r) -> Union[str, int]:
+            return r
+
+        assert func('foo') == 'foo'
+        assert func(1) == 1
 
     def test_raise_error_when_type_different(self):
         @strict
