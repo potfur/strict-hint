@@ -25,7 +25,7 @@ setup(
     test_suite='tests',
     tests_require=[
         'pytest',
-        'pytest-flake8',
+        'flake8',
     ],
     classifiers=[
         'Intended Audience :: Developers',
